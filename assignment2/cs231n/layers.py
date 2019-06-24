@@ -365,25 +365,38 @@ def conv_forward_naive(x, w, b, conv_param):
     F = w.shape[0]
     HH = w.shape[2]
     WW = w.shape[3]
-    H_res = 1 + (H + 2 * pad - HH) / stride
-    W_res = 1 + (W + 2 * pad - WW) / stride
-    print((N, F, H_res, W_res))
+    H_res = int(1 + (H + 2 * pad - HH) / stride)
+    W_res = int(1 + (W + 2 * pad - WW) / stride)
+    #print((N, F, H_res, W_res))
     res = np.zeros((int(N), int(F), int(H_res), int(W_res)))
     for i_ind in range(N):
         i = x[i_ind]
-        print(i)
-        current_i = np.pad(i, pad, 0)
+        #print(i)
+        #print(pad)
+        current_i = np.pad(i, pad, 'constant')
         current_i = current_i[pad: -pad]
+        print(current_i.shape)
         for j_ind in range(F):
             j = w[j_ind]
-            start_h_array = np.arange(0, -HH,stride)
-            start_w_array = np.arange(0, -WW,stride)
+            #print("(H + 2 * pad - HH):", H + 2 * pad - HH)
+            start_h_array = np.linspace(0, (H + 2 * pad - HH), H_res)
+            start_w_array = np.linspace(0, (W + 2 * pad - WW), H_res)
+            #print(H_res)
             for starth_idx in range(H_res):
                 for startw_idx in range(W_res):
-                    starth = start_h_array[starth_idx]
-                    startw = start_w_array[startw_idx]
-                    current_sample = i[:, starth:starth+HH, startw:startw+WW]
-                    res[i_ind][j_ind][starth_idx][startw_idx] = current_sample*j+b[j_ind]
+                    #print(H)
+                    #print(HH)
+                    #print(stride)
+                    #print(start_h_array)
+                    starth = int(start_h_array[starth_idx])
+                    startw = int(start_w_array[startw_idx])
+                    current_sample = current_i[:, starth:starth+HH, startw:startw+WW]
+                    #print(starth, starth+HH, startw, startw+WW)
+                    #print(i)
+                    #print(i[:, 0:4, 2:6])
+                    #print(current_sample)
+                    #print(j.shape)
+                    res[i_ind][j_ind][starth_idx][startw_idx] = np.sum(current_sample*j)+b[j_ind]
                     
     out = res
                         
